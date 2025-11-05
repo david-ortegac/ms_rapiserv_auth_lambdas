@@ -1,0 +1,40 @@
+# Dependencias
+node_modules/
+package-lock.json
+
+# Build
+dist/
+releases/
+build/
+*.js
+*.js.map
+!build.config.mjs
+
+# Releases
+releases/
+*.zip
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Test
+coverage/
+.nyc_output/
