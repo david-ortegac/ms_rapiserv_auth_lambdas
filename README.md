@@ -168,6 +168,32 @@ npm test
 
 Verifica que tienes `bestzip` instalado y que el directorio `releases/` existe.
 
+## 🔐 Validación de Tokens JWT en Otras Lambdas
+
+Este proyecto incluye un módulo reutilizable para validar tokens JWT en otras lambdas sin necesidad de importar todo el servicio de autenticación.
+
+### Uso Rápido
+
+```typescript
+import { validateTokenFromEvent } from './utils/jwt-validator';
+
+export const handler = async (event: any) => {
+  const validation = validateTokenFromEvent(event);
+  
+  if (!validation.valid) {
+    return {
+      statusCode: 401,
+      body: JSON.stringify({ message: 'Unauthorized', error: validation.error }),
+    };
+  }
+
+  const { userId, email, name, type } = validation.payload!;
+  // Tu lógica aquí...
+};
+```
+
+Para más información, consulta [src/utils/README.md](src/utils/README.md).
+
 ## 📄 Licencia
 
 Este proyecto está bajo la Licencia MIT. Ver el archivo [LICENSE.md](LICENSE.md) para más detalles.

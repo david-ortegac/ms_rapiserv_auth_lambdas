@@ -6,8 +6,10 @@ import { AuthControllerImpl } from '../adapter/restful/v1/controller/AuthControl
 import { AdapterMapperImpl } from '../adapter/restful/v1/controller/Mapper/AdapterMapperImpl';
 import { IAdapterMapper } from '../adapter/restful/v1/controller/Mapper/IAdapterMapper';
 import { IAuthService } from '../application/services/IAuthService';
+import { IAuthTokenService } from '../application/services/IAuthTokenService';
 import { ICypherService } from '../application/services/ICypherService';
 import { AuthServiceImpl } from '../domain/AuthServiceImpl';
+import { AuthTokenServiceImpl } from '../domain/AuthTokenServiceImpl';
 import { CypherServiceImpl } from '../domain/CypherServiceImpl';
 import { AppDataSource } from '../infraestructure/mysql/data-source';
 import { User } from '../infraestructure/mysql/Entity/User';
@@ -32,6 +34,8 @@ container.bind<Repository<User>>(TYPES.RepositoryUser).toDynamicValue(createUser
 
 // Configurar Services
 container.bind<IAuthService>(TYPES.AuthService).to(AuthServiceImpl);
+container.bind<IAuthTokenService>(TYPES.IAuthTokenService).to(AuthTokenServiceImpl);
+container.bind<ICypherService>(TYPES.ICypherService).to(CypherServiceImpl);
 
 // Configurar Repositories
 container.bind<MysqlUserRepository>(TYPES.MysqlUserRepository).to(MysqlUserRepositoryImpl);
@@ -42,8 +46,5 @@ container.bind<IAdapterMapper>(TYPES.IAdapterMapper).to(AdapterMapperImpl);
 
 // Configurar Controllers
 container.bind<AuthController>(TYPES.AuthController).to(AuthControllerImpl);
-
-// Configurar Cypher Service
-container.bind<ICypherService>(TYPES.ICypherService).to(CypherServiceImpl);
 
 export { container };

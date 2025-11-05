@@ -1,11 +1,13 @@
 import { inject, injectable } from 'inversify';
 
 import { IAuthService } from '../application/services/IAuthService';
+import { IAuthTokenService, TokenPayload } from '../application/services/IAuthTokenService';
 import { ICypherService } from '../application/services/ICypherService';
 import { InfraestructureMapperImpl } from '../infraestructure/mysql/Mapper/InfraestructureMapperImpl';
 import { MysqlUserRepository } from '../infraestructure/mysql/Respository/MysqlUserRepository';
 import { TYPES } from '../ioc/Types';
 import { DomainUserEntity } from './Entities/DomainUserEntity';
+import { LoginResponse } from './Entities/LoginResponse';
 
 @injectable()
 export class AuthServiceImpl implements IAuthService {
@@ -15,8 +17,10 @@ export class AuthServiceImpl implements IAuthService {
     @inject(TYPES.IInfraestructureMapper)
     private readonly mapper: InfraestructureMapperImpl,
     @inject(TYPES.ICypherService)
-    private readonly cypherService: ICypherService
-  ) { }
+    private readonly cypherService: ICypherService,
+    @inject(TYPES.IAuthTokenService)
+    private readonly tokenService: IAuthTokenService
+  ) {}
 
   async register(user: DomainUserEntity): Promise<DomainUserEntity> {
     const existingUser = await this.repository.findByEmail(user.email);
@@ -37,7 +41,7 @@ export class AuthServiceImpl implements IAuthService {
     return this.mapper.toUserDomain(createdUser);
   }
 
-  async login(email: string, password: string): Promise<DomainUserEntity> {
+  async login(email: string, password: string): Promise<LoginResponse> {
     const user = await this.repository.findByEmail(email);
     if (!user) {
       throw new Error('Invalid email or password');
@@ -53,7 +57,16 @@ export class AuthServiceImpl implements IAuthService {
       throw new Error('User account is not active');
     }
 
-    return domainUser;
+    const token = this.tokenService.generateToken(domainUser);
+
+    return {
+      user: domainUser,
+      token,
+    };
+  }
+
+  async validateToken(token: string): Promise<TokenPayload> {
+    return this.tokenService.verifyToken(token);
   }
 
   async resetPassword(email: string, newPassword: string): Promise<DomainUserEntity> {

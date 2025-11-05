@@ -8,4 +8,5 @@ export const TYPES = {
   DataSource: Symbol.for('DataSource'),
   RepositoryUser: Symbol.for('Repository<User>'),
   ICypherService: Symbol.for('ICypherService'),
+  IAuthTokenService: Symbol.for('IAuthTokenService'),
 };

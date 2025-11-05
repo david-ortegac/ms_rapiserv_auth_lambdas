@@ -1,9 +1,10 @@
 import { inject, injectable } from 'inversify';
 
 import { IAuthService } from '../../../../application/services/IAuthService';
+import { TokenPayload } from '../../../../application/services/IAuthTokenService';
 import { DomainUserEntity } from '../../../../domain/Entities/DomainUserEntity';
 import { TYPES } from '../../../../ioc/Types';
-import { AuthController } from './AuthController';
+import { AuthController, LoginResponseAdapter } from './AuthController';
 import { AdapterUserEntity } from './Entity/AdapterUserEntity';
 import { IAdapterMapper } from './Mapper/IAdapterMapper';
 
@@ -13,7 +14,7 @@ export class AuthControllerImpl implements AuthController {
     @inject(TYPES.AuthService)
     private readonly authService: IAuthService,
     @inject(TYPES.IAdapterMapper) private readonly mapper: IAdapterMapper
-  ) { }
+  ) {}
 
   async handleRequest(event: any): Promise<any> {
     try {
@@ -32,11 +33,36 @@ export class AuthControllerImpl implements AuthController {
         }
 
         if (path.includes('/login')) {
-          const loggedInUser = await this.login(body.email, body.password);
+          const loginResponse = await this.login(body.email, body.password);
           return {
             statusCode: 200,
-            body: JSON.stringify(loggedInUser),
+            body: JSON.stringify(loginResponse),
           };
+        }
+
+        if (path.includes('/validate-token')) {
+          const token = this.extractTokenFromEvent(event, body);
+          if (!token) {
+            return {
+              statusCode: 400,
+              body: JSON.stringify({ message: 'Token is required' }),
+            };
+          }
+          try {
+            const payload = await this.validateToken(token);
+            return {
+              statusCode: 200,
+              body: JSON.stringify({ valid: true, payload }),
+            };
+          } catch (error) {
+            return {
+              statusCode: 401,
+              body: JSON.stringify({
+                valid: false,
+                message: error instanceof Error ? error.message : 'Invalid token',
+              }),
+            };
+          }
         }
 
         if (path.includes('/reset-password')) {
@@ -107,9 +133,16 @@ export class AuthControllerImpl implements AuthController {
     return this.mapper.toUserAdapter(createdUser);
   }
 
-  async login(email: string, password: string): Promise<AdapterUserEntity> {
-    const loggedInUser = await this.authService.login(email, password);
-    return this.mapper.toUserAdapter(loggedInUser);
+  async login(email: string, password: string): Promise<LoginResponseAdapter> {
+    const loginResponse = await this.authService.login(email, password);
+    return {
+      user: this.mapper.toUserAdapter(loginResponse.user),
+      token: loginResponse.token,
+    };
+  }
+
+  async validateToken(token: string): Promise<TokenPayload> {
+    return await this.authService.validateToken(token);
   }
 
   async resetPassword(email: string, newPassword: string): Promise<AdapterUserEntity> {
@@ -129,5 +162,38 @@ export class AuthControllerImpl implements AuthController {
 
     const updatedUser = await this.authService.updateUser(id, domainUpdates);
     return this.mapper.toUserAdapter(updatedUser);
+  }
+
+  private extractTokenFromEvent(event: any, body: any): string | null {
+    // Intentar obtener el token del header Authorization
+    const authHeader = event?.headers?.Authorization || event?.headers?.authorization;
+    if (authHeader?.startsWith('Bearer ')) {
+      return authHeader.replace('Bearer ', '');
+    }
+
+    // Intentar obtener el token del body
+    if (body?.token) {
+      return body.token;
+    }
+
+    // Intentar obtener el token de query parameters
+    if (event?.queryStringParameters?.token) {
+      return event.queryStringParameters.token;
+    }
+
+    return null;
+  }
+
+  private async validateTokenInRequest(event: any): Promise<TokenPayload | null> {
+    try {
+      const body = event?.body ? JSON.parse(event.body) : {};
+      const token = this.extractTokenFromEvent(event, body);
+      if (!token) {
+        return null;
+      }
+      return await this.validateToken(token);
+    } catch {
+      return null;
+    }
   }
 }
