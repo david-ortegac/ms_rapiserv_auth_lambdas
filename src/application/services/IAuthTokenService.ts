@@ -1,10 +1,8 @@
 import { DomainUserEntity } from '../../domain/Entities/DomainUserEntity';
 
 export interface TokenPayload {
-  userId: number;
   email: string;
   name: string;
-  type: string;
 }
 
 export interface IAuthTokenService {
