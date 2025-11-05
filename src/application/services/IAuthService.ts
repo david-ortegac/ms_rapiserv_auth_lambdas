@@ -4,4 +4,8 @@ export interface IAuthService {
   register(user: DomainUserEntity): Promise<DomainUserEntity>;
   login(email: string, password: string): Promise<DomainUserEntity>;
   resetPassword(email: string, newPassword: string): Promise<DomainUserEntity>;
+  updateUser(
+    id: number,
+    updates: Partial<Pick<DomainUserEntity, 'name' | 'email' | 'password' | 'status'>>
+  ): Promise<DomainUserEntity>;
 }

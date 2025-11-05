@@ -1,5 +1,5 @@
 import { DomainUserEntity } from '../../../../../domain/Entities/DomainUserEntity';
-import { AdapterUserEntity } from '../Entity/AdapterUserEntity';
+import { AdapterUserEntity, StatusUser, TypeUser } from '../Entity/AdapterUserEntity';
 import { IAdapterMapper } from './IAdapterMapper';
 
 export class AdapterMapperImpl implements IAdapterMapper {
@@ -9,8 +9,8 @@ export class AdapterMapperImpl implements IAdapterMapper {
       name: adapterEntity.nombre,
       email: adapterEntity.email,
       password: adapterEntity.password,
-      status: adapterEntity.estado,
-      type: adapterEntity.tipo,
+      status: adapterEntity.estado as string,
+      type: adapterEntity.tipo as string,
       createdAt: adapterEntity.fechaCreacion,
       updatedAt: adapterEntity.fechaActualizacion,
       createdBy: adapterEntity.creadoPor,
@@ -24,8 +24,8 @@ export class AdapterMapperImpl implements IAdapterMapper {
       nombre: domainEntity.name,
       email: domainEntity.email,
       password: domainEntity.password,
-      estado: domainEntity.status,
-      tipo: domainEntity.type,
+      estado: domainEntity.status as StatusUser,
+      tipo: domainEntity.type as TypeUser,
       fechaCreacion: domainEntity.createdAt,
       fechaActualizacion: domainEntity.updatedAt,
       creadoPor: domainEntity.createdBy,

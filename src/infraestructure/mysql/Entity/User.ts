@@ -19,7 +19,7 @@ export class User {
   @Column({ type: 'varchar', length: 50, default: 'active' })
   status!: string;
 
-  @Column({ type: 'varchar', length: 50 })
+  @Column({ type: 'varchar', length: 50, default: 'user' })
   type!: string;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
