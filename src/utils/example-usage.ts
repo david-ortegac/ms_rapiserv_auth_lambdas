@@ -54,9 +54,9 @@ export const handlerWithPayload = async (event: any) => {
     };
   }
 
-  const { userId, email } = payload;
+  const { userId, email: _email } = payload;
 
-  // Tu lógica aquí usando userId y email
+  // Tu lógica aquí usando userId y _email
   const result = await processUserData(userId);
 
   return {

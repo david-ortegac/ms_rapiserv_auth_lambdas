@@ -41,12 +41,12 @@ export class AuthTokenServiceImpl implements IAuthTokenService {
       return decoded;
     } catch (error) {
       if (error instanceof jwt.JsonWebTokenError) {
-        throw new Error('Invalid token');
+        throw new Error('Invalid token', { cause: error });
       }
       if (error instanceof jwt.TokenExpiredError) {
-        throw new Error('Token expired');
+        throw new Error('Token expired', { cause: error });
       }
-      throw new Error('Token verification failed');
+      throw new Error('Token verification failed', { cause: error });
     }
   }
 
