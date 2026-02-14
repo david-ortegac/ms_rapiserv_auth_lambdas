@@ -12,6 +12,25 @@ Este proyecto sigue una **arquitectura hexagonal (Clean Architecture)** con las 
 - **Adapter**: Controladores REST y mappers
 - **Presenter**: Formateo de respuestas
 
+### Documentación y diagramas
+
+Los diagramas están en [docs/](docs/) en formato Mermaid (`.mmd`). Puedes visualizarlos en [Mermaid Live](https://mermaid.live) pegando el contenido de cada archivo.
+
+| Diagrama | Archivo | Descripción |
+|----------|---------|-------------|
+| **Componentes** | [docs/component-diagram.mmd](docs/component-diagram.mmd) | Capas y dependencias entre componentes (Adapter, Domain, Infrastructure). |
+| **Clases** | [docs/class-diagram.mmd](docs/class-diagram.mmd) | Interfaces, implementaciones y entidades del proyecto. |
+| **Entidad-Relación** | [docs/er-diagram.mmd](docs/er-diagram.mmd) | Modelo de datos (tabla `users`). |
+| **Infraestructura** | [docs/infrastructure-diagram.mmd](docs/infrastructure-diagram.mmd) | Lambda, API Gateway, MySQL y pipeline de build. |
+| **Secuencia (flujo general)** | [docs/sequence-diagram.mmd](docs/sequence-diagram.mmd) | Entrada a la Lambda y enrutado de peticiones. |
+| **Secuencia: Registro** | [docs/sequence-register.mmd](docs/sequence-register.mmd) | POST /register. |
+| **Secuencia: Login** | [docs/sequence-login.mmd](docs/sequence-login.mmd) | POST /login. |
+| **Secuencia: Validar token** | [docs/sequence-validate-token.mmd](docs/sequence-validate-token.mmd) | POST /validate-token. |
+| **Secuencia: Reset password** | [docs/sequence-reset-password.mmd](docs/sequence-reset-password.mmd) | POST /reset-password. |
+| **Secuencia: Actualizar usuario** | [docs/sequence-update-user.mmd](docs/sequence-update-user.mmd) | PUT /users/{id}. |
+
+Índice completo de documentación: [docs/README.md](docs/README.md).
+
 ## 📋 Requisitos Previos
 
 - Node.js 22.x o superior
