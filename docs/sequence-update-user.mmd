@@ -1,0 +1,50 @@
+%% Secuencia - Actualizar usuario (PUT /users/{id})
+
+sequenceDiagram
+    autonumber
+    participant Ctrl as AuthControllerImpl
+    participant Mapper as IAdapterMapper
+    participant Svc as AuthServiceImpl
+    participant Repo as MysqlUserRepository
+    participant DB as MySQL (users)
+    participant Cypher as ICypherService
+    participant InfraMap as IInfraestructureMapper
+
+    Ctrl->>Ctrl: parse id, updates (nombre, email, password, estado)
+    Ctrl->>Mapper: (mapeo implícito a dominio en updateUser)
+    Ctrl->>+Svc: updateUser(id, domainUpdates)
+    Svc->>Repo: findById(id)
+    Repo->>DB: SELECT by id
+    DB-->>Repo: User | null
+    Repo-->>Svc: existingUser
+    alt Usuario no existe
+        Svc-->>Ctrl: throw User not found
+    end
+    Svc->>InfraMap: toUserDomain(existingUser)
+    InfraMap-->>Svc: domainUser
+    alt email en updates y distinto al actual
+        Svc->>Repo: findByEmail(updates.email)
+        Repo->>DB: SELECT by email
+        DB-->>Repo: User | null
+        Repo-->>Svc: userWithEmail
+        alt Email ya usado por otro usuario
+            Svc-->>Ctrl: throw Email already exists
+        end
+    end
+    alt password en updates
+        Svc->>Cypher: encrypt(updates.password)
+        Cypher-->>Svc: encryptedPassword
+    end
+    Svc->>InfraMap: toUserEntity(updatedUser)
+    InfraMap-->>Svc: User (entity)
+    Svc->>Repo: update(entity)
+    Repo->>DB: UPDATE / save
+    DB-->>Repo: User
+    Repo-->>Svc: savedUser
+    Svc->>InfraMap: toUserDomain(savedUser)
+    InfraMap-->>Svc: DomainUserEntity
+    Svc-->>-Ctrl: DomainUserEntity
+    Ctrl->>Mapper: toUserAdapter(domainUser)
+    Mapper-->>Ctrl: AdapterUserEntity
+    Ctrl->>Ctrl: statusCode 200, body
+    Ctrl-->>Ctrl: response

@@ -1,0 +1,38 @@
+%% Secuencia - Login (POST /login)
+
+sequenceDiagram
+    autonumber
+    participant Ctrl as AuthControllerImpl
+    participant Svc as AuthServiceImpl
+    participant Repo as MysqlUserRepository
+    participant DB as MySQL (users)
+    participant Cypher as ICypherService
+    participant InfraMap as IInfraestructureMapper
+    participant TokenSvc as IAuthTokenService
+    participant Mapper as IAdapterMapper
+
+    Ctrl->>+Svc: login(email, password)
+    Svc->>Repo: findByEmail(email)
+    Repo->>DB: SELECT by email
+    DB-->>Repo: User | null
+    Repo-->>Svc: user
+    alt Usuario no existe
+        Svc-->>Ctrl: throw Invalid email or password
+    end
+    Svc->>Cypher: decrypt(user.password)
+    Cypher-->>Svc: decryptedPassword
+    alt Contraseña incorrecta
+        Svc-->>Ctrl: throw Invalid email or password
+    end
+    Svc->>InfraMap: toUserDomain(user)
+    InfraMap-->>Svc: domainUser
+    alt status !== 'active'
+        Svc-->>Ctrl: throw User account is not active
+    end
+    Svc->>TokenSvc: generateToken(domainUser)
+    TokenSvc-->>Svc: token (JWT)
+    Svc-->>-Ctrl: LoginResponse { user, token }
+    Ctrl->>Mapper: toUserAdapter(domainUser)
+    Mapper-->>Ctrl: AdapterUserEntity
+    Ctrl->>Ctrl: { user: adapterUser, token }, statusCode 200
+    Ctrl-->>Ctrl: response

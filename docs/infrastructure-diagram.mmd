@@ -1,0 +1,57 @@
+%% Diagrama de Infraestructura - MS Auth Lambda
+%% Despliegue: AWS Lambda + API Gateway + MySQL
+%% Build: TypeScript + esbuild -> dist -> zip -> Lambda
+
+flowchart TB
+    subgraph client["Cliente"]
+        Client["Cliente HTTP / API"]
+    end
+
+    subgraph aws["AWS Cloud"]
+        subgraph api["API Gateway"]
+            APIGW["REST API<br/>POST /register, /login<br/>POST /validate-token, /reset-password<br/>PUT /users/{id}"]
+        end
+
+        subgraph compute["Compute"]
+            Lambda["AWS Lambda<br/>ms_auth_lambda<br/>handler(event)"]
+        end
+
+        subgraph config["Configuración Lambda"]
+            EnvVars["Variables de entorno<br/>DB_HOST, DB_PORT<br/>DB_USERNAME, DB_PASSWORD<br/>DB_DATABASE<br/>JWT_SECRET_KEY, JWT_EXPIRES_IN<br/>AES_SECRET_KEY"]
+        end
+    end
+
+    subgraph external["Externo / VPC"]
+        MySQL["MySQL<br/>Base de datos<br/>Tabla: users"]
+    end
+
+    subgraph build["Pipeline de Build (local/CI)"]
+        Src["src/ (TypeScript)"]
+        Esbuild["esbuild"]
+        Dist["dist/<br/>index.js + package.json"]
+        Zip["bestzip"]
+        Pkg["releases/*.zip"]
+    end
+
+    %% Flujo de peticiones
+    Client -->|"HTTPS"| APIGW
+    APIGW -->|"Invoca"| Lambda
+    Lambda -->|"TypeORM<br/>MySQL2"| MySQL
+    Lambda --> EnvVars
+
+    %% Flujo de build
+    Src --> Esbuild
+    Esbuild --> Dist
+    Dist --> Zip
+    Zip --> Pkg
+    Pkg -.->|"Deploy manual / CLI"| Lambda
+
+    %% Estilos
+    classDef clientStyle fill:#e3f2fd
+    classDef awsStyle fill:#fff8e1
+    classDef externalStyle fill:#ffebee
+    classDef buildStyle fill:#e8f5e9
+    class Client clientStyle
+    class APIGW,Lambda,EnvVars awsStyle
+    class MySQL externalStyle
+    class Src,Esbuild,Dist,Zip,Pkg buildStyle

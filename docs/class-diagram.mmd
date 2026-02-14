@@ -1,0 +1,221 @@
+%% Diagrama de Clases - MS Auth Lambda
+%% Generado a partir del análisis del código (Clean Architecture)
+
+classDiagram
+    %% ========== ENTRY ==========
+    class handler {
+        +handler(event) Promise~any~
+    }
+
+    %% ========== ADAPTER - Interfaces ==========
+    class AuthController {
+        <<interface>>
+        +handleRequest(event) Promise~any~
+        +register(user) Promise~AdapterUserEntity~
+        +login(email, password) Promise~LoginResponseAdapter~
+        +resetPassword(email, newPassword) Promise~AdapterUserEntity~
+        +updateUser(id, updates) Promise~AdapterUserEntity~
+        +validateToken(token) Promise~TokenPayload~
+    }
+
+    class IAdapterMapper {
+        <<interface>>
+        +toUserDomain(adapterEntity) DomainUserEntity
+        +toUserAdapter(domainEntity) AdapterUserEntity
+        +toUserDomainList(adapterList) DomainUserEntity[]
+        +toUserAdapterList(domainList) AdapterUserEntity[]
+    }
+
+    %% ========== ADAPTER - Implementaciones ==========
+    class AuthControllerImpl {
+        -authService IAuthService
+        -mapper IAdapterMapper
+        +handleRequest(event) Promise~any~
+        +register(user) Promise~AdapterUserEntity~
+        +login(email, password) Promise~LoginResponseAdapter~
+        +resetPassword(email, newPassword) Promise~AdapterUserEntity~
+        +updateUser(id, updates) Promise~AdapterUserEntity~
+        +validateToken(token) Promise~TokenPayload~
+        -extractTokenFromEvent(event, body) string?
+        -validateTokenInRequest(event) Promise~TokenPayload?~
+    }
+
+    class AdapterMapperImpl {
+        +toUserDomain(adapterEntity) DomainUserEntity
+        +toUserAdapter(domainEntity) AdapterUserEntity
+        +toUserDomainList(adapterList) DomainUserEntity[]
+        +toUserAdapterList(domainList) AdapterUserEntity[]
+    }
+
+    %% ========== APPLICATION - Ports ==========
+    class IAuthService {
+        <<interface>>
+        +register(user) Promise~DomainUserEntity~
+        +login(email, password) Promise~LoginResponse~
+        +resetPassword(email, newPassword) Promise~DomainUserEntity~
+        +updateUser(id, updates) Promise~DomainUserEntity~
+        +validateToken(token) Promise~TokenPayload~
+    }
+
+    class IAuthTokenService {
+        <<interface>>
+        +generateToken(user) string
+        +verifyToken(token) TokenPayload
+        +validateToken(token) boolean
+    }
+
+    class ICypherService {
+        <<interface>>
+        +encrypt(text) string
+        +decrypt(text) string
+    }
+
+    %% ========== DOMAIN - Use Cases ==========
+    class AuthServiceImpl {
+        -repository MysqlUserRepository
+        -mapper IInfraestructureMapper
+        -cypherService ICypherService
+        -tokenService IAuthTokenService
+        +register(user) Promise~DomainUserEntity~
+        +login(email, password) Promise~LoginResponse~
+        +resetPassword(email, newPassword) Promise~DomainUserEntity~
+        +updateUser(id, updates) Promise~DomainUserEntity~
+        +validateToken(token) Promise~TokenPayload~
+    }
+
+    class AuthTokenServiceImpl {
+        -secretKey string
+        -expiresIn string
+        +generateToken(user) string
+        +verifyToken(token) TokenPayload
+        +validateToken(token) boolean
+    }
+
+    class CypherServiceImpl {
+        -secretKey string
+        +encrypt(text) string
+        +decrypt(encryptedText) string
+    }
+
+    %% ========== INFRASTRUCTURE - Interfaces ==========
+    class MysqlUserRepository {
+        <<interface>>
+        +findById(id) Promise~User?~
+        +findByEmail(email) Promise~User?~
+        +create(user) Promise~User~
+        +update(user) Promise~User~
+        +delete(id) Promise~void~
+    }
+
+    class IInfraestructureMapper {
+        <<interface>>
+        +toUserDomain(entity) DomainUserEntity
+        +toUserEntity(domain) User
+        +toUserDomainList(entityList) DomainUserEntity[]
+        +toUserEntityList(domainList) User[]
+    }
+
+    %% ========== INFRASTRUCTURE - Implementaciones ==========
+    class MysqlUserRepositoryImpl {
+        -userRepository Repository~User~
+        +findById(id) Promise~User?~
+        +findByEmail(email) Promise~User?~
+        +create(user) Promise~User~
+        +update(user) Promise~User~
+        +delete(id) Promise~void~
+    }
+
+    class InfraestructureMapperImpl {
+        +toUserDomain(entity) DomainUserEntity
+        +toUserEntity(domain) User
+        +toUserDomainList(entityList) DomainUserEntity[]
+        +toUserEntityList(domainList) User[]
+    }
+
+    %% ========== ENTIDADES ==========
+    class AdapterUserEntity {
+        <<interface/DTO>>
+        +id number?
+        +nombre string
+        +email string
+        +password string
+        +estado StatusUser?
+        +tipo TypeUser?
+        +fechaCreacion Date?
+        +fechaActualizacion Date?
+        +creadoPor string?
+        +actualizadoPor string?
+    }
+
+    class DomainUserEntity {
+        <<interface>>
+        +id number?
+        +name string
+        +email string
+        +password string
+        +status string
+        +type string
+        +createdAt Date
+        +updatedAt Date
+        +createdBy string
+        +updatedBy string
+    }
+
+    class LoginResponse {
+        <<interface>>
+        +user DomainUserEntity
+        +token string
+    }
+
+    class TokenPayload {
+        <<interface>>
+        +email string
+        +name string
+    }
+
+    class User {
+        <<TypeORM Entity>>
+        +id number
+        +name string
+        +email string
+        +password string
+        +status string
+        +type string
+        +created_at Date
+        +updated_at Date
+        +created_by string
+        +updated_by string
+    }
+
+    %% ========== RELACIONES ==========
+    handler ..> AuthControllerImpl : usa
+    AuthControllerImpl ..|> AuthController : implementa
+    AuthControllerImpl --> IAuthService : usa
+    AuthControllerImpl --> IAdapterMapper : usa
+    AdapterMapperImpl ..|> IAdapterMapper : implementa
+    AuthControllerImpl --> AdapterMapperImpl : usa
+
+    IAuthService <|.. AuthServiceImpl : implementa
+    AuthServiceImpl --> MysqlUserRepository : usa
+    AuthServiceImpl --> IInfraestructureMapper : usa
+    AuthServiceImpl --> ICypherService : usa
+    AuthServiceImpl --> IAuthTokenService : usa
+    AuthServiceImpl --> InfraestructureMapperImpl : usa
+
+    IAuthTokenService <|.. AuthTokenServiceImpl : implementa
+    ICypherService <|.. CypherServiceImpl : implementa
+
+    MysqlUserRepository <|.. MysqlUserRepositoryImpl : implementa
+    AuthServiceImpl --> MysqlUserRepositoryImpl : usa
+    MysqlUserRepositoryImpl --> User : persiste
+    IInfraestructureMapper <|.. InfraestructureMapperImpl : implementa
+    InfraestructureMapperImpl ..> User : mapea
+    InfraestructureMapperImpl ..> DomainUserEntity : mapea
+    AdapterMapperImpl ..> AdapterUserEntity : mapea
+    AdapterMapperImpl ..> DomainUserEntity : mapea
+
+    AuthServiceImpl ..> DomainUserEntity : usa
+    AuthServiceImpl ..> LoginResponse : retorna
+    AuthControllerImpl ..> AdapterUserEntity : usa
+    AuthTokenServiceImpl ..> DomainUserEntity : usa
+    AuthTokenServiceImpl ..> TokenPayload : retorna

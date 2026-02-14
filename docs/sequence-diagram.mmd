@@ -1,0 +1,37 @@
+%% Diagrama de Secuencia - MS Auth Lambda
+%% Flujo general: Entrada a la Lambda
+%% (Cada archivo .mmd debe contener un único sequenceDiagram para evitar errores de parseo)
+
+sequenceDiagram
+    autonumber
+    participant Client as Cliente / API Gateway
+    participant Handler as handler (index.ts)
+    participant DS as AppDataSource
+    participant IoC as Container (Inversify)
+    participant Ctrl as AuthControllerImpl
+    participant Svc as AuthServiceImpl
+
+    Client->>+Handler: event (HTTP request)
+    Handler->>Handler: ¿DataSource inicializado?
+    alt No inicializado
+        Handler->>DS: initialize()
+        DS-->>Handler: ok
+    end
+    Handler->>IoC: get(TYPES.AuthController)
+    IoC-->>Handler: AuthControllerImpl
+    Handler->>Ctrl: handleRequest(event)
+    Ctrl->>Ctrl: parse method, path, body
+    alt POST /register
+        Ctrl->>Svc: register(domainUser)
+    else POST /login
+        Ctrl->>Svc: login(email, password)
+    else POST /validate-token
+        Ctrl->>Svc: validateToken(token)
+    else POST /reset-password
+        Ctrl->>Svc: resetPassword(email, newPassword)
+    else PUT /users/{id}
+        Ctrl->>Svc: updateUser(id, updates)
+    end
+    Svc-->>Ctrl: resultado
+    Ctrl-->>Handler: { statusCode, body }
+    Handler-->>-Client: response

@@ -1,0 +1,23 @@
+%% Diagrama Entidad-Relación - MS Auth Lambda
+%% Basado en la entidad TypeORM User (tabla users)
+%% Base de datos: MySQL
+
+erDiagram
+    users {
+        bigint id PK "Primary key, auto-increment"
+        varchar name "255 chars"
+        varchar email UK "255 chars, unique"
+        text password "Contraseña cifrada (AES)"
+        varchar status "50 chars, default 'active'"
+        varchar type "50 chars, default 'user'"
+        timestamp created_at "CURRENT_TIMESTAMP"
+        timestamp updated_at "CURRENT_TIMESTAMP ON UPDATE"
+        varchar created_by "255 chars"
+        varchar updated_by "255 chars"
+    }
+
+    %% Notas:
+    %% - PK: Primary Key
+    %% - UK: Unique Key
+    %% - En esta versión del microservicio no hay relaciones con otras tablas.
+    %% - Futuras tablas (roles, sesiones, etc.) se relacionarían con users.id

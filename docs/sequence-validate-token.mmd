@@ -1,0 +1,25 @@
+%% Secuencia - Validar token (POST /validate-token)
+
+sequenceDiagram
+    autonumber
+    participant Ctrl as AuthControllerImpl
+    participant Svc as AuthServiceImpl
+    participant TokenSvc as IAuthTokenService
+
+    Ctrl->>Ctrl: extractTokenFromEvent(event, body)
+    alt Token no presente
+        Ctrl->>Ctrl: 400 Token is required
+    end
+    Ctrl->>Svc: validateToken(token)
+    Svc->>TokenSvc: verifyToken(token)
+    TokenSvc->>TokenSvc: jwt.verify(token, secret)
+    alt Token inválido o expirado
+        TokenSvc-->>Svc: throw
+        Svc-->>Ctrl: throw
+        Ctrl->>Ctrl: 401 valid: false
+    else Token válido
+        TokenSvc-->>Svc: TokenPayload { email, name }
+        Svc-->>Ctrl: TokenPayload
+        Ctrl->>Ctrl: 200 { valid: true, payload }
+    end
+    Ctrl-->>Ctrl: response

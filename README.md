@@ -113,17 +113,44 @@ sam local invoke -e event.json
 
 ### Variables de Entorno
 
-Configura las siguientes variables en tu función Lambda:
+Configura las siguientes variables en tu función Lambda (o en un archivo `.env` en desarrollo). Todas son **necesarias** para el correcto funcionamiento del microservicio, salvo `DB_PORT` y `NODE_ENV`, que tienen valores por defecto.
+
+| Variable | Tipo | Longitud / Formato | Descripción |
+|----------|------|--------------------|-------------|
+| `AES_SECRET_KEY` | `string` | **32 caracteres** (recomendado para AES-256) | Clave secreta para cifrado/descifrado de contraseñas (AES). Debe ser la misma en todos los entornos que compartan usuarios. |
+| `DB_DATABASE` | `string` | Nombre de la base de datos | Nombre de la base de datos MySQL. |
+| `DB_HOST` | `string` | Host o URL | Host o dominio del servidor MySQL (ej. `localhost`, `www.ejemplo.com`). |
+| `DB_PASSWORD` | `string` | — | Contraseña del usuario MySQL. |
+| `DB_PORT` | `string` (numérico) | Opcional, por defecto `3306` | Puerto del servidor MySQL. |
+| `DB_USERNAME` | `string` | — | Usuario de conexión a MySQL. |
+| `JWT_EXPIRES_IN` | `string` | Formato vercel/ms (ej. `1h`, `7d`, `30m`) | Tiempo de expiración del token JWT. |
+| `JWT_SECRET_KEY` | `string` | Mín. 256 bits (64 caracteres hex recomendado) | Clave secreta para firmar y verificar tokens JWT. Debe ser la misma en todas las lambdas que validen el mismo token. |
+| `NODE_ENV` | `string` | `development` \| `production` | Entorno de ejecución. En `production` se desactiva `synchronize` de TypeORM y el logging SQL. |
+
+#### Ejemplo de configuración (placeholders)
+
+**No subas valores reales al repositorio.** Usa AWS Lambda Environment Variables, AWS Secrets Manager o un `.env` local (y añade `.env` al `.gitignore`).
 
 ```bash
+# Base de datos MySQL
 DB_HOST=tu-host-mysql
 DB_PORT=3306
 DB_USERNAME=tu-usuario
 DB_PASSWORD=tu-password
 DB_DATABASE=tu-base-de-datos
+
+# Cifrado de contraseñas (AES) — 32 caracteres
+AES_SECRET_KEY=tu-clave-aes-32-caracteres!!
+
+# JWT
+JWT_SECRET_KEY=tu-clave-jwt-min-64-chars-hex-o-mas
+JWT_EXPIRES_IN=1h
+
+# Entorno
+NODE_ENV=production
 ```
 
-**Nota**: Actualmente las credenciales están hardcodeadas en `data-source.ts`. Se recomienda migrar a variables de entorno para producción.
+**Nota**: Asegúrate de que `AES_SECRET_KEY` tenga exactamente **32 caracteres** si usas AES-256 con la configuración por defecto del proyecto.
 
 ## 📁 Estructura del Proyecto
 

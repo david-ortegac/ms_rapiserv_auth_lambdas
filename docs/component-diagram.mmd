@@ -1,0 +1,92 @@
+%% Diagrama de Componentes - MS Auth Lambda
+%% Arquitectura: Clean Architecture / Hexagonal
+%% Entry → Adapter (REST) → Application (Ports) → Domain (Use Cases) → Infrastructure
+
+flowchart TB
+    subgraph entry["Entry Point"]
+        Handler["handler (index.ts)"]
+    end
+
+    subgraph adapter["Adapter - REST"]
+        AuthController["AuthController"]
+        AuthControllerImpl["AuthControllerImpl"]
+        IAdapterMapper["IAdapterMapper"]
+        AdapterMapperImpl["AdapterMapperImpl"]
+    end
+
+    subgraph application["Application - Ports"]
+        IAuthService["IAuthService"]
+        IAuthTokenService["IAuthTokenService"]
+        ICypherService["ICypherService"]
+    end
+
+    subgraph domain["Domain - Use Cases"]
+        AuthServiceImpl["AuthServiceImpl"]
+        AuthTokenServiceImpl["AuthTokenServiceImpl"]
+        CypherServiceImpl["CypherServiceImpl"]
+    end
+
+    subgraph infrastructure["Infrastructure"]
+        MysqlUserRepository["MysqlUserRepository"]
+        MysqlUserRepositoryImpl["MysqlUserRepositoryImpl"]
+        IInfraestructureMapper["IInfraestructureMapper"]
+        InfraestructureMapperImpl["InfraestructureMapperImpl"]
+        AppDataSource["AppDataSource (TypeORM)"]
+        UserEntity["User Entity"]
+    end
+
+    subgraph entities["Entities"]
+        AdapterUserEntity["AdapterUserEntity"]
+        DomainUserEntity["DomainUserEntity"]
+        LoginResponse["LoginResponse"]
+    end
+
+    %% Flujo principal
+    Handler -->|"handleRequest"| AuthControllerImpl
+    AuthControllerImpl -.->|implements| AuthController
+    AuthControllerImpl --> IAuthService
+    AuthControllerImpl --> IAdapterMapper
+    AdapterMapperImpl -.->|implements| IAdapterMapper
+    AuthControllerImpl --> AdapterMapperImpl
+
+    %% Domain implementa Application
+    AuthServiceImpl -.->|implements| IAuthService
+    AuthTokenServiceImpl -.->|implements| IAuthTokenService
+    CypherServiceImpl -.->|implements| ICypherService
+
+    %% AuthServiceImpl depende de
+    AuthServiceImpl --> MysqlUserRepository
+    AuthServiceImpl --> IInfraestructureMapper
+    AuthServiceImpl --> ICypherService
+    AuthServiceImpl --> IAuthTokenService
+    AuthServiceImpl --> InfraestructureMapperImpl
+
+    %% Infrastructure
+    MysqlUserRepositoryImpl -.->|implements| MysqlUserRepository
+    AuthServiceImpl --> MysqlUserRepositoryImpl
+    InfraestructureMapperImpl -.->|implements| IInfraestructureMapper
+    MysqlUserRepositoryImpl -->|"Repository&lt;User&gt;"| AppDataSource
+    AppDataSource --> UserEntity
+
+    %% Mappers y entidades
+    IAdapterMapper -->|"AdapterUserEntity ↔ DomainUserEntity"| AdapterMapperImpl
+    IInfraestructureMapper -->|"User ↔ DomainUserEntity"| InfraestructureMapperImpl
+    InfraestructureMapperImpl --> UserEntity
+    InfraestructureMapperImpl --> DomainUserEntity
+    AuthServiceImpl --> DomainUserEntity
+    AuthServiceImpl --> LoginResponse
+    AuthControllerImpl --> AdapterUserEntity
+
+    %% Estilos por capa
+    classDef entry fill:#e3f2fd
+    classDef adapter fill:#fff8e1
+    classDef application fill:#f3e5f5
+    classDef domain fill:#e8f5e9
+    classDef infra fill:#ffebee
+    classDef entity fill:#eceff1
+    class Handler entry
+    class AuthController,AuthControllerImpl,IAdapterMapper,AdapterMapperImpl adapter
+    class IAuthService,IAuthTokenService,ICypherService application
+    class AuthServiceImpl,AuthTokenServiceImpl,CypherServiceImpl domain
+    class MysqlUserRepository,MysqlUserRepositoryImpl,IInfraestructureMapper,InfraestructureMapperImpl,AppDataSource,UserEntity infra
+    class AdapterUserEntity,DomainUserEntity,LoginResponse entity

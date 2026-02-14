@@ -1,0 +1,37 @@
+%% Secuencia - Registro de usuario (POST /register)
+
+sequenceDiagram
+    autonumber
+    participant Ctrl as AuthControllerImpl
+    participant Mapper as IAdapterMapper
+    participant Svc as AuthServiceImpl
+    participant Repo as MysqlUserRepository
+    participant Cypher as ICypherService
+    participant InfraMap as IInfraestructureMapper
+    participant DB as MySQL (users)
+
+    Ctrl->>Mapper: toUserDomain(adapterUser)
+    Mapper-->>Ctrl: DomainUserEntity
+    Ctrl->>+Svc: register(domainUser)
+    Svc->>Repo: findByEmail(email)
+    Repo->>DB: SELECT by email
+    DB-->>Repo: User | null
+    Repo-->>Svc: existingUser
+    alt Usuario ya existe
+        Svc-->>Ctrl: throw Error
+    end
+    Svc->>Cypher: encrypt(password)
+    Cypher-->>Svc: encryptedPassword
+    Svc->>InfraMap: toUserEntity(domainUser)
+    InfraMap-->>Svc: User (entity)
+    Svc->>Repo: create(entity)
+    Repo->>DB: INSERT
+    DB-->>Repo: User
+    Repo-->>Svc: createdUser
+    Svc->>InfraMap: toUserDomain(createdUser)
+    InfraMap-->>Svc: DomainUserEntity
+    Svc-->>-Ctrl: DomainUserEntity
+    Ctrl->>Mapper: toUserAdapter(domainUser)
+    Mapper-->>Ctrl: AdapterUserEntity
+    Ctrl->>Ctrl: JSON.stringify, statusCode 201
+    Ctrl-->>Ctrl: response
