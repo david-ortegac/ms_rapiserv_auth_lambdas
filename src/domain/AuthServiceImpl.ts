@@ -69,7 +69,7 @@ export class AuthServiceImpl implements IAuthService {
     return this.tokenService.verifyToken(token);
   }
 
-  async resetPassword(email: string, oldPassword: string, newPassword: string): Promise<DomainUserEntity> {
+  async resetPassword(email: string, oldPassword: string, newPassword: string): Promise<string> {
     const user = await this.repository.findByEmail(email);
     if (!user) {
       throw new Error('User not found');
@@ -89,7 +89,10 @@ export class AuthServiceImpl implements IAuthService {
 
     const entity = this.mapper.toUserEntity(updatedUser);
     const savedUser = await this.repository.update(entity);
-    return this.mapper.toUserDomain(savedUser);
+    if (!savedUser) {
+      throw new Error('Failed to reset password');
+    }
+    return 'Password reset successfully';
   }
 
   async updateUser(

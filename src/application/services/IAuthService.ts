@@ -5,7 +5,7 @@ import { TokenPayload } from './IAuthTokenService';
 export interface IAuthService {
   register(user: DomainUserEntity): Promise<DomainUserEntity>;
   login(email: string, password: string): Promise<LoginResponse>;
-  resetPassword(email: string, oldPassword: string, newPassword: string): Promise<DomainUserEntity>;
+  resetPassword(email: string, oldPassword: string, newPassword: string): Promise<string>;
   updateUser(
     id: number,
     updates: Partial<Pick<DomainUserEntity, 'name' | 'email' | 'password' | 'status'>>

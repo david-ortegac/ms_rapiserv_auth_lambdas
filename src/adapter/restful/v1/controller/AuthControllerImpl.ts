@@ -145,9 +145,9 @@ export class AuthControllerImpl implements AuthController {
     return await this.authService.validateToken(token);
   }
 
-  async resetPassword(email: string, oldPassword: string, newPassword: string): Promise<AdapterUserEntity> {
+  async resetPassword(email: string, oldPassword: string, newPassword: string): Promise<string> {
     const updatedUser = await this.authService.resetPassword(email, oldPassword, newPassword);
-    return this.mapper.toUserAdapter(updatedUser);
+    return updatedUser;
   }
 
   async updateUser(
