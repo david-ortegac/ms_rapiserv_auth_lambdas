@@ -69,10 +69,15 @@ export class AuthServiceImpl implements IAuthService {
     return this.tokenService.verifyToken(token);
   }
 
-  async resetPassword(email: string, newPassword: string): Promise<DomainUserEntity> {
+  async resetPassword(email: string, oldPassword: string, newPassword: string): Promise<DomainUserEntity> {
     const user = await this.repository.findByEmail(email);
     if (!user) {
       throw new Error('User not found');
+    }
+
+    const decryptedPassword = this.cypherService.decrypt(user.password);
+    if (decryptedPassword !== oldPassword) {
+      throw new Error('Invalid old password');
     }
 
     const encryptedPassword = this.cypherService.encrypt(newPassword);

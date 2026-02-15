@@ -28,7 +28,7 @@ sequenceDiagram
     else POST /validate-token
         Ctrl->>Svc: validateToken(token)
     else POST /reset-password
-        Ctrl->>Svc: resetPassword(email, newPassword)
+        Ctrl->>Svc: resetPassword(email, oldPassword, newPassword)
     else PUT /users/{id}
         Ctrl->>Svc: updateUser(id, updates)
     end

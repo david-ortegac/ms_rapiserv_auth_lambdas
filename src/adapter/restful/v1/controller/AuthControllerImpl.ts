@@ -66,7 +66,7 @@ export class AuthControllerImpl implements AuthController {
         }
 
         if (path.includes('/reset-password')) {
-          const updatedUser = await this.resetPassword(body.email, body.newPassword);
+          const updatedUser = await this.resetPassword(body.email, body.oldPassword, body.newPassword);
           return {
             statusCode: 200,
             body: JSON.stringify(updatedUser),
@@ -145,8 +145,8 @@ export class AuthControllerImpl implements AuthController {
     return await this.authService.validateToken(token);
   }
 
-  async resetPassword(email: string, newPassword: string): Promise<AdapterUserEntity> {
-    const updatedUser = await this.authService.resetPassword(email, newPassword);
+  async resetPassword(email: string, oldPassword: string, newPassword: string): Promise<AdapterUserEntity> {
+    const updatedUser = await this.authService.resetPassword(email, oldPassword, newPassword);
     return this.mapper.toUserAdapter(updatedUser);
   }
 

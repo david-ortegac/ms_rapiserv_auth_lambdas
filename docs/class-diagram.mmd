@@ -13,7 +13,7 @@ classDiagram
         +handleRequest(event) Promise~any~
         +register(user) Promise~AdapterUserEntity~
         +login(email, password) Promise~LoginResponseAdapter~
-        +resetPassword(email, newPassword) Promise~AdapterUserEntity~
+        +resetPassword(email, oldPassword, newPassword) Promise~AdapterUserEntity~
         +updateUser(id, updates) Promise~AdapterUserEntity~
         +validateToken(token) Promise~TokenPayload~
     }
@@ -33,7 +33,7 @@ classDiagram
         +handleRequest(event) Promise~any~
         +register(user) Promise~AdapterUserEntity~
         +login(email, password) Promise~LoginResponseAdapter~
-        +resetPassword(email, newPassword) Promise~AdapterUserEntity~
+        +resetPassword(email, oldPassword, newPassword) Promise~AdapterUserEntity~
         +updateUser(id, updates) Promise~AdapterUserEntity~
         +validateToken(token) Promise~TokenPayload~
         -extractTokenFromEvent(event, body) string?
@@ -52,7 +52,7 @@ classDiagram
         <<interface>>
         +register(user) Promise~DomainUserEntity~
         +login(email, password) Promise~LoginResponse~
-        +resetPassword(email, newPassword) Promise~DomainUserEntity~
+        +resetPassword(email, oldPassword, newPassword) Promise~DomainUserEntity~
         +updateUser(id, updates) Promise~DomainUserEntity~
         +validateToken(token) Promise~TokenPayload~
     }
@@ -78,7 +78,7 @@ classDiagram
         -tokenService IAuthTokenService
         +register(user) Promise~DomainUserEntity~
         +login(email, password) Promise~LoginResponse~
-        +resetPassword(email, newPassword) Promise~DomainUserEntity~
+        +resetPassword(email, oldPassword, newPassword) Promise~DomainUserEntity~
         +updateUser(id, updates) Promise~DomainUserEntity~
         +validateToken(token) Promise~TokenPayload~
     }

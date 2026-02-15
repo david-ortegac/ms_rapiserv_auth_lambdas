@@ -5,7 +5,7 @@
    "license": "MIT",
    "type": "commonjs",
    "scripts": {
-      "build": "npm run clean && node build.config.mjs",
+      "build": "npm run clean && node build.config.mjs && npm run zip",
       "build-app": "tsc -p tsconfig.json",
       "clean": "rimraf dist",
       "package": "npm run build && npm run zip",
