@@ -286,6 +286,7 @@ classDiagram
         <<interface>>
         +email string
         +name string
+        +type string
     }
 
     class User {

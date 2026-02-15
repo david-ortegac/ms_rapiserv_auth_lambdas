@@ -18,7 +18,7 @@ sequenceDiagram
         Svc-->>Ctrl: throw
         Ctrl->>Ctrl: 401 valid: false
     else Token válido
-        TokenSvc-->>Svc: TokenPayload { email, name }
+        TokenSvc-->>Svc: TokenPayload { email, name, type }
         Svc-->>Ctrl: TokenPayload
         Ctrl->>Ctrl: 200 { valid: true, payload }
     end

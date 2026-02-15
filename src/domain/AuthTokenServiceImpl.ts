@@ -22,6 +22,7 @@ export class AuthTokenServiceImpl implements IAuthTokenService {
     const payload: TokenPayload = {
       email: user.email,
       name: user.name,
+      type: user.type,
     };
 
     return jwt.sign(payload, this.secretKey, {
