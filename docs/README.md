@@ -482,6 +482,7 @@ sequenceDiagram
 | Documento | Descripción |
 |-----------|-------------|
 | [environment-variables.md](environment-variables.md) | Variables de entorno: tipo, longitud y uso. |
+| [security-endpoints-validation.md](security-endpoints-validation.md) | Validación de seguridad por endpoint: autenticación, autorización, riesgos y recomendaciones. |
 
 ```mermaid
 

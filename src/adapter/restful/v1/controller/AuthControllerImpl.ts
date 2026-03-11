@@ -84,7 +84,7 @@ export class AuthControllerImpl implements AuthController {
         const body = JSON.parse(event?.body || '{}');
         const id = event?.pathParameters?.id ? Number.parseInt(event.pathParameters.id) : body.id;
 
-        if (path.includes('/{id}') || path.includes('/update')) {
+        if (path.includes('/{id}') || path.includes('/user-update')) {
           if (!id) {
             return {
               statusCode: 400,
@@ -92,11 +92,18 @@ export class AuthControllerImpl implements AuthController {
             };
           }
 
-          const updates: Partial<Pick<AdapterUserEntity, 'nombre' | 'email' | 'password' | 'estado'>> = {};
+          if (event.headers['Authorization'] !== process.env.API_KEY) {
+            return {
+              statusCode: 401,
+              body: JSON.stringify({ message: 'Unauthorized' }),
+            };
+          }
+
+          const updates: Partial<Pick<AdapterUserEntity, 'nombre' | 'password' | 'estado' | 'tipo'>> = {};
           if (body.nombre !== undefined) updates.nombre = body.nombre;
-          if (body.email !== undefined) updates.email = body.email;
           if (body.password !== undefined) updates.password = body.password;
           if (body.estado !== undefined) updates.estado = body.estado;
+          if (body.tipo !== undefined) updates.tipo = body.tipo;
 
           const updatedUser = await this.updateUser(id, updates);
           return {
@@ -152,13 +159,12 @@ export class AuthControllerImpl implements AuthController {
 
   async updateUser(
     id: number,
-    updates: Partial<Pick<AdapterUserEntity, 'nombre' | 'email' | 'password' | 'estado'>>
+    updates: Partial<Pick<AdapterUserEntity, 'nombre' | 'estado' | 'tipo'>>
   ): Promise<AdapterUserEntity> {
-    const domainUpdates: Partial<Pick<DomainUserEntity, 'name' | 'email' | 'password' | 'status'>> = {};
+    const domainUpdates: Partial<Pick<DomainUserEntity, 'name' | 'status' | 'type'>> = {};
     if (updates.nombre !== undefined) domainUpdates.name = updates.nombre;
-    if (updates.email !== undefined) domainUpdates.email = updates.email;
-    if (updates.password !== undefined) domainUpdates.password = updates.password;
     if (updates.estado !== undefined) domainUpdates.status = updates.estado;
+    if (updates.tipo !== undefined) domainUpdates.type = updates.tipo;
 
     const updatedUser = await this.authService.updateUser(id, domainUpdates);
     return this.mapper.toUserAdapter(updatedUser);
